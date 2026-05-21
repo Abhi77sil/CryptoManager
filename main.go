@@ -50,7 +50,7 @@ func commander() { //4
 			continue
 		}
 		if strings.ToLower(inp) == "newaddy" {
-			fmt.Println("----------------------------------------------------------------------------------")
+			helpers.Border(true)
 			fmt.Printf("Enter Name >>> ")
 			scanner := bufio.NewReader(os.Stdin)
 			name, err := scanner.ReadString('\n')
@@ -65,12 +65,17 @@ func commander() { //4
 		if strings.ToLower(inp) == "clear" {
 			helpers.Clearer(&Aj, true)
 			updator()
+			continue
 		}
 		if strings.ToLower(inp) == "list" {
 			helpers.Clearer(&Aj, false)
+			continue
 
 		}
-
+		if strings.ToLower(inp) == "balance" {
+			helpers.Balance(&Aj)
+			continue
+		}
 	}
 }
 
@@ -159,7 +164,6 @@ func NewAddress(name string) {
 
 func main() {
 	mainloader()
-
 	commander()
 
 }
