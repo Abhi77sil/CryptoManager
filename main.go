@@ -76,6 +76,10 @@ func commander() { //4
 			helpers.Balance(&Aj)
 			continue
 		}
+		if strings.ToLower(inp) == "add" {
+			name, addy, wif := helpers.Add()
+			push(name, addy, wif)
+		}
 	}
 }
 
@@ -108,10 +112,22 @@ func existence(nm string) string {
 	}
 
 }
+func checkup(name string, address string, wif string) bool {
+	if strings.TrimSpace(name) == "" || strings.TrimSpace(address) == "" || strings.TrimSpace(wif) == "" {
+		return true
+	} else {
+		return false
+	}
+}
 
 func push(name string, address string, wif string) error { //1
 
 	name = existence(name)
+	if checkup(name, address, wif) {
+		fmt.Println("Empty strings passed | 001")
+		return errors.New("Red")
+	}
+
 	Aj[name] = make(map[string]string)
 	Aj[name]["addy"] = address
 	Aj[name]["wif"] = wif

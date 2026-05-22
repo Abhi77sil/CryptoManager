@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/ltcsuite/ltcd/chaincfg"
+	"github.com/ltcsuite/ltcd/ltcutil"
 )
 
 func Help() {
@@ -56,6 +59,7 @@ func Clearer(Aj *map[string]map[string]string, confirm bool) {
 }
 
 func Balance(Aj *map[string]map[string]string) {
+
 	Border(true)
 	fmt.Printf("Personal or external address? (p/e) >>> ")
 	scanner := bufio.NewReader(os.Stdin)
@@ -77,7 +81,7 @@ func Balance(Aj *map[string]map[string]string) {
 		}
 		Border(false)
 		fmt.Println("Address: >>>> ", address)
-		bal, Inusd, err2 := Ltcbalance(address)
+		bal, Inusd, _, err2 := Ltcbalance(address)
 		if err2 != nil {
 			fmt.Println("Balance fetch compromised | 008")
 			return
@@ -99,13 +103,14 @@ func Balance(Aj *map[string]map[string]string) {
 		Border(false)
 
 		fmt.Println("Address: >>>> ", address)
-		bal, Inusd, err2 := Ltcbalance(address)
+		bal, Inusd, _, err2 := Ltcbalance(address)
 		if err2 != nil {
 			fmt.Println("Balance fetch compromised | 008")
 			return
 		}
 		fmt.Println("Balance: >>>> ", bal)
 		fmt.Println("Balance in USD: >>>> $", Inusd)
+		Border(true)
 
 		return
 
@@ -124,4 +129,44 @@ func Border(space bool) {
 		return
 	}
 	fmt.Println("----------------------------------------------------------------------------------")
+}
+
+func Add() (name string, addy string, wif string) {
+	Border(true)
+	fmt.Printf("Enter wif >>>")
+	scanner := bufio.NewReader(os.Stdin)
+	wif, err := scanner.ReadString('\n')
+	if err != nil {
+		fmt.Println("WIF Reader compromised | 010")
+		return
+	}
+	wif = strings.TrimSpace(wif)
+	fmt.Printf("Enter name >>>")
+	name, err2 := scanner.ReadString('\n')
+	if err2 != nil {
+		fmt.Println("Name Reader compromised | 010")
+		return
+	}
+	name = strings.TrimSpace(name)
+	if name == "" || wif == "" {
+		fmt.Println("Invalid traffic sent | 010")
+		return
+	}
+	objec, err := ltcutil.DecodeWIF(wif)
+	if err != nil {
+		fmt.Println("WIF decoding compromised ", err, "| 010")
+		return
+	}
+	pbbytes := objec.SerializePubKey()
+	hashy := ltcutil.Hash160(pbbytes)
+	add, err3 := ltcutil.NewAddressPubKeyHash(hashy, &chaincfg.MainNetParams)
+
+	if err3 != nil {
+		fmt.Println("Address generation compromised ", err3, "| 010")
+		return
+	}
+	add1 := add.EncodeAddress()
+	addy = string(add1)
+	return name, addy, wif
+
 }
