@@ -9,7 +9,14 @@ import (
 
 func Ltcbalance(addr string) (float64, float64, float64, error) {
 	var w sync.WaitGroup
-	w.Add(2)
+	var err3 error
+	var Inusd float64
+	w.Add(1)
+	go func() {
+		defer w.Done()
+		Inusd, _, err3 = Usdltc(1)
+	}()
+
 	var data struct {
 		Info struct {
 			Recived float64 `json:"funded_txo_sum"`
@@ -29,11 +36,12 @@ func Ltcbalance(addr string) (float64, float64, float64, error) {
 	}
 	raw := data.Info.Recived - data.Info.Sent
 	balance := (data.Info.Recived - data.Info.Sent) / 100000000
-	Inusd, _, err3 := Usdltc(balance)
+
 	if err3 != nil {
 		fmt.Println("USD conversion compromised | 007")
 		return balance, 0, 0, err3
 	}
-	return balance, Inusd, raw, nil
+	w.Wait()
+	return balance, balance * Inusd, raw, nil
 
 }

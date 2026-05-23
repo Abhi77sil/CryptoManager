@@ -80,6 +80,9 @@ func commander() { //4
 			name, addy, wif := helpers.Add()
 			push(name, addy, wif)
 		}
+		if strings.ToLower(inp) == "utxo" {
+			helpers.Utxolister(&Aj)
+		}
 	}
 }
 

@@ -1,10 +1,13 @@
 package helpers
 
 import (
+	"SCS/FNDS/utils"
+	"SCS/FNDS/utxo"
 	"bufio"
 	"fmt"
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/ltcsuite/ltcd/chaincfg"
 	"github.com/ltcsuite/ltcd/ltcutil"
@@ -169,4 +172,56 @@ func Add() (name string, addy string, wif string) {
 	addy = string(add1)
 	return name, addy, wif
 
+}
+
+func Utxolister(Aj *map[string]map[string]string) {
+	var addy string
+	var err error
+	var exists bool
+	var usd float64
+
+	var w sync.WaitGroup
+	w.Add(1)
+
+	go func() {
+		defer w.Done()
+		_, usd, err = Usdltc(1)
+	}()
+
+	Border(true)
+	personal, err1 := utils.PersonalOrExternal()
+	if err1 != nil {
+		fmt.Println("Input compromised  | 015")
+		return
+	}
+	if personal {
+		name, err := utils.Input("Enter name >>> ")
+		if err != nil {
+			fmt.Println("Input compromised  | 015")
+			return
+		}
+		addy, exists = (*Aj)[name]["addy"]
+		if !exists {
+			fmt.Println("Address not found")
+			return
+		}
+
+	} else if !personal {
+		addy, err = utils.Input("Enter address >>> ")
+		if err != nil {
+			fmt.Println("Input compromised  | 015")
+			return
+		}
+	}
+
+	data, err := utxo.Ltcutxo(addy)
+	if err != nil {
+		fmt.Println("UTXO fetch compromised | 015")
+		return
+	}
+	w.Wait()
+	for _, utxo := range data {
+		Border(false)
+		fmt.Printf("TXID: %s, VOUT: %d, Value: $%.8f\n", utxo.Txid, utxo.Vout, (utxo.Value/100000000)*usd)
+	}
 }
