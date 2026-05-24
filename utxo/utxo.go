@@ -29,3 +29,12 @@ func Ltcutxo(addy string) (returner []struct {
 	}
 	return data, nil
 }
+
+func Chooseutxo(price float64, addy string) {
+	utxos, err := Ltcutxo(addy)
+	if err != nil {
+		fmt.Println("Utxo retrieval compromised | 016")
+		return
+	}
+
+}
